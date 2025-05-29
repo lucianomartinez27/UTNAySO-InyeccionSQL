@@ -3,7 +3,7 @@ import sqlite3
 
 app = Flask(__name__)
 
-def filtrar_usuarios_por_nombre_de_forma_segura(nombre=None, modo='seguro'):
+def filtrar_usuarios_por_nombre(nombre=None, modo='seguro'):
     conn = sqlite3.connect('usuarios.db')
     cursor = conn.cursor()
 
@@ -27,7 +27,7 @@ def filtrar_usuarios_por_nombre_de_forma_segura(nombre=None, modo='seguro'):
 def buscar_usuario():
     nombre_busqueda = request.form.get('nombre', '') if request.method == 'POST' else ''
     modo = request.form.get('modo')
-    usuarios = filtrar_usuarios_por_nombre_de_forma_segura(nombre_busqueda, modo)
+    usuarios = filtrar_usuarios_por_nombre(nombre_busqueda, modo)
     return render_template('usuarios.html', usuarios=usuarios, filtro=nombre_busqueda)
 
 if __name__ == '__main__':
