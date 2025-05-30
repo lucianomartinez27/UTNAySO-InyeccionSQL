@@ -151,6 +151,7 @@
     <table>
         <thead>
         <tr>
+            <th>id</th>
             <th>Título</th>
             <th>Contenido</th>
             <th>Fecha</th>
@@ -160,6 +161,7 @@
         <tbody>
         {% for nota in notas %}
         <tr>
+            <td>{{ nota['id'] }}</td>
             <td>{{ nota['titulo'] }}</td>
             <td>{{ nota['contenido'] }}</td>
             <td>{{ nota['fecha_creacion'].split(' ')[0] }}</td>

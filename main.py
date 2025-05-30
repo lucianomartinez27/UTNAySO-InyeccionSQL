@@ -49,11 +49,11 @@ def notas():
     if busqueda:
         # Si hay un término de búsqueda, filtramos por contenido
         notas = conn.execute(
-            f'SELECT id, titulo, contenido, fecha_creacion FROM notas WHERE usuario_id = {session['user_id']} AND contenido LIKE "%{busqueda}%" ORDER BY fecha_creacion DESC'
+            f"SELECT id, titulo, contenido, fecha_creacion FROM notas WHERE usuario_id = {session['user_id']} AND contenido LIKE '%{busqueda}%' ORDER BY fecha_creacion DESC"
         ).fetchall()
     else:
         # Si no hay término de búsqueda, mostramos todas las notas
-        notas = conn.execute(f'SELECT * FROM notas WHERE usuario_id = {session['user_id']} ORDER BY fecha_creacion DESC').fetchall()
+        notas = conn.execute(f"SELECT * FROM notas WHERE usuario_id = {session['user_id']} ORDER BY fecha_creacion DESC").fetchall()
 
     conn.close()
 
@@ -67,7 +67,7 @@ def nueva_nota():
         contenido = request.form.get('contenido')
 
         conn = coneccion_a_base_de_datos()
-        conn.executescript(f'INSERT INTO notas (usuario_id, titulo, contenido) VALUES ("{session['user_id']}", "{titulo}", "{contenido}")')
+        conn.executescript(f"INSERT INTO notas (usuario_id, titulo, contenido) VALUES ('{session['user_id']}', '{titulo}', '{contenido}')")
         conn.commit()
         conn.close()
 
@@ -116,7 +116,7 @@ def init_db():
         ('Luciano Martínez', 'luciano', 'luciano123'),
         ('Lucio Rivas', 'lucio', 'lucio123'),
         ('Máximo Ponce', 'maximo', 'maximo123'),
-        ('Sebastián Rodriguez', 'sebastian', 'sebastian123')
+        ('Santiago Rodriguez', 'santiago', 'santiago123')
     ]
     cursor.executemany("INSERT INTO usuarios (nombre, usuario, password) VALUES (?, ?, ?)", usuarios_ejemplo)
 

