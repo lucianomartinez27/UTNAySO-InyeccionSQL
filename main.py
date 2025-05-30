@@ -113,9 +113,10 @@ def init_db():
     """)
 
     usuarios_ejemplo = [
-        ('Juan Pérez', 'juan', 'juan123'),
-        ('María García', 'maria', 'maria123'),
-        ('Carlos López', 'carlos', 'carlos123')
+        ('Luciano Martínez', 'luciano', 'luciano123'),
+        ('Lucio Rivas', 'lucio', 'lucio123'),
+        ('Máximo Ponce', 'maximo', 'maximo123'),
+        ('Sebastián Rodriguez', 'sebastian', 'sebastian123')
     ]
     cursor.executemany("INSERT INTO usuarios (nombre, usuario, password) VALUES (?, ?, ?)", usuarios_ejemplo)
 

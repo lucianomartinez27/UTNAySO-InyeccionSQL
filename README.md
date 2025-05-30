@@ -47,19 +47,20 @@ pip install -r requirements.txt
 
 ## Ejecución de la aplicación
 
-1. Ya con el entorno virtual esté activado:
+Ya con el entorno virtual esté activado:
 
-2. Ejecuta la aplicación:
+1. Ejecuta la aplicación:
    ```
    python main.py
    ```
 
-3. La aplicación estará disponible en: http://127.0.0.1:5000/
+2. La aplicación estará disponible en: http://127.0.0.1:5000/
 
-4. Puedes iniciar sesión con cualquiera de los siguientes usuarios de ejemplo:
-   - Usuario: juan, Contraseña: juan123
-   - Usuario: maria, Contraseña: maria123
-   - Usuario: carlos, Contraseña: carlos123
+3. Se puede iniciar sesión con cualquiera de los siguientes usuarios de ejemplo:
+   - Usuario: luciano, Contraseña: luciano123
+   - Usuario: lucio, Contraseña: lucio123
+   - Usuario: maximo, Contraseña: maximo123
+   - Usuario: sebastian, Contraseña: sebastian123
 
 ## Ejemplos de inyección SQL
 
