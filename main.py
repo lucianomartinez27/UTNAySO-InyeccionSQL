@@ -23,8 +23,6 @@ def login():
             session['user_id'] = user['id']
             session['user_name'] = user['nombre']
             return redirect(url_for('notas'))
-        else:
-            flash('Email o contraseña incorrectos', 'error')
 
     return render_template('login.html')
 
@@ -32,7 +30,6 @@ def login():
 @app.route('/logout')
 def logout():
     session.clear()
-    flash('Has cerrado sesión', 'info')
     return redirect(url_for('login'))
 
 # Notes routes
@@ -44,10 +41,20 @@ def index():
 
 @app.route('/notas')
 def notas():
+    busqueda = request.args.get('buscar', '')
 
     conn = coneccion_a_base_de_datos()
-    notas = conn.execute('SELECT * FROM notas WHERE usuario_id = ? ORDER BY fecha_creacion DESC',
-                        (session['user_id'],)).fetchall()
+
+
+    if busqueda:
+        # Si hay un término de búsqueda, filtramos por contenido
+        notas = conn.execute(
+            f'SELECT id, titulo, contenido, fecha_creacion FROM notas WHERE usuario_id = {session['user_id']} AND contenido LIKE "%{busqueda}%" ORDER BY fecha_creacion DESC'
+        ).fetchall()
+    else:
+        # Si no hay término de búsqueda, mostramos todas las notas
+        notas = conn.execute(f'SELECT * FROM notas WHERE usuario_id = {session['user_id']} ORDER BY fecha_creacion DESC').fetchall()
+
     conn.close()
 
     return render_template('notas.html', notas=notas)
@@ -60,11 +67,10 @@ def nueva_nota():
         contenido = request.form.get('contenido')
 
         conn = coneccion_a_base_de_datos()
-        conn.executescript(f'INSERT INTO notas (titulo, contenido, usuario_id) VALUES ("{titulo}", "{contenido}", "{session['user_id']}")')
+        conn.executescript(f'INSERT INTO notas (usuario_id, titulo, contenido) VALUES ("{session['user_id']}", "{titulo}", "{contenido}")')
         conn.commit()
         conn.close()
 
-        flash('Nota creada correctamente', 'success')
         return redirect(url_for('notas'))
 
     return render_template('crear_notas.html')
@@ -77,7 +83,6 @@ def eliminar_nota(id):
     conn.commit()
     conn.close()
 
-    flash('Nota eliminada correctamente', 'success')
     return redirect(url_for('notas'))
 
 def init_db():

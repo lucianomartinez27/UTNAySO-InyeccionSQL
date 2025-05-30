@@ -11,11 +11,13 @@
             padding: 0;
             background-color: #f5f5f5;
         }
+
         .container {
             max-width: 900px;
             margin: 0 auto;
             padding: 20px;
         }
+
         header {
             display: flex;
             justify-content: space-between;
@@ -24,196 +26,158 @@
             padding-bottom: 10px;
             border-bottom: 1px solid #ddd;
         }
+
         h1 {
             color: #333;
             margin: 0;
         }
-        .user-info {
-            display: flex;
-            align-items: center;
-        }
+
+
         .user-name {
             margin-right: 15px;
             font-weight: bold;
         }
+
         .logout-btn {
             padding: 8px 15px;
-            background-color: #f44336;
+            background-color: red;
             color: white;
-            border: none;
-            border-radius: 4px;
             cursor: pointer;
             text-decoration: none;
             font-size: 14px;
         }
+
         .logout-btn:hover {
             background-color: #d32f2f;
         }
+
         .new-note-btn {
-            padding: 10px 20px;
-            background-color: #4CAF50;
+            padding: 5px;
+            background-color: green;
             color: white;
-            border: none;
-            border-radius: 4px;
             cursor: pointer;
             text-decoration: none;
-            font-size: 16px;
-            display: inline-block;
-            margin-bottom: 20px;
         }
+
         .new-note-btn:hover {
             background-color: #45a049;
         }
-        .notes-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 20px;
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            overflow: hidden;
         }
-        .note-card {
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            transition: transform 0.2s, box-shadow 0.2s;
-            position: relative;
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
         }
-        .note-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-        .note-title {
-            font-size: 18px;
+
+        th {
             font-weight: bold;
-            margin-bottom: 10px;
             color: #333;
         }
-        .note-date {
-            font-size: 12px;
-            color: #888;
-            margin-bottom: 10px;
+
+        tr:hover {
+            background-color: #f5f5f5;
         }
-        .note-content {
-            color: #555;
-            margin-bottom: 15px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
-        }
-        .note-actions {
-            display: flex;
-            justify-content: flex-end;
-        }
+
         .note-btn {
             padding: 5px 10px;
             margin-left: 5px;
             border: none;
-            border-radius: 4px;
             cursor: pointer;
             text-decoration: none;
             font-size: 14px;
         }
-        .view-btn {
-            background-color: #2196F3;
-            color: white;
-        }
-        .view-btn:hover {
-            background-color: #0b7dda;
-        }
-        .edit-btn {
-            background-color: #FFC107;
-            color: #333;
-        }
-        .edit-btn:hover {
-            background-color: #e6af05;
-        }
+
         .delete-form {
             display: inline;
         }
+
         .delete-btn {
             background-color: #f44336;
             color: white;
         }
+
         .delete-btn:hover {
             background-color: #d32f2f;
         }
+
         .no-notes {
             text-align: center;
-            padding: 40px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 20px;
         }
-        .no-notes p {
-            color: #666;
-            margin-bottom: 20px;
-        }
-        .flash-messages {
-            margin-bottom: 20px;
-        }
-        .flash-message {
-            padding: 10px;
-            border-radius: 4px;
-            margin-bottom: 10px;
-        }
-        .flash-message.success {
-            background-color: #d4edda;
-            color: #155724;
-        }
-        .flash-message.error {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-        .flash-message.info {
-            background-color: #d1ecf1;
-            color: #0c5460;
-        }
+
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Mis Notas</h1>
-            <div class="user-info">
-                <span class="user-name">{{ session['user_name'] }}</span>
-                <a href="{{ url_for('logout') }}" class="logout-btn">Cerrar Sesión</a>
-            </div>
-        </header>
-        
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                <div class="flash-messages">
-                    {% for category, message in messages %}
-                        <div class="flash-message {{ category }}">{{ message }}</div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        {% endwith %}
-        
-        <a href="{{ url_for('nueva_nota') }}" class="new-note-btn">+ Nueva Nota</a>
-        
-        {% if notas %}
-            <div class="notes-grid">
-                {% for nota in notas %}
-                    <div class="note-card">
-                        <div class="note-title">{{ nota['titulo'] }}</div>
-                        <div class="note-date">{{ nota['fecha_creacion'].split(' ')[0] }}</div>
-                        <div class="note-content">{{ nota['contenido'] }}</div>
-                        <div class="note-actions">
-                                <form action="{{ url_for('eliminar_nota', id=nota['id']) }}" method="POST" class="delete-form" onsubmit="return confirm('¿Estás seguro de eliminar esta nota?');">
-                                <button type="submit" class="note-btn delete-btn">Eliminar</button>
-                            </form>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <div class="no-notes">
-                <p>No tienes notas guardadas.</p>
-                <a href="{{ url_for('nueva_nota') }}" class="new-note-btn">Crear tu primera nota</a>
-            </div>
-        {% endif %}
+<div class="container">
+    <header>
+        <h1>Mis Notas</h1>
+        <div class="user-info">
+            <span class="user-name">{{ session['user_name'] }}</span>
+            <a href="{{ url_for('logout') }}" class="logout-btn">Cerrar Sesión</a>
+        </div>
+    </header>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-messages">
+        {% for category, message in messages %}
+        <div class="flash-message {{ category }}">{{ message }}</div>
+        {% endfor %}
     </div>
+    {% endif %}
+    {% endwith %}
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <a href="{{ url_for('nueva_nota') }}" class="new-note-btn">Nueva Nota</a>
+
+        <form action="{{ url_for('notas') }}" method="GET">
+            <input type="text" name="buscar" placeholder="Buscar en contenido..." 
+                   value="{{ request.args.get('buscar', '') }}" 
+                   style="padding: 8px; border: 1px solid #ddd; margin-right: 10px; width: 450px;">
+            <button type="submit" style="padding: 8px 15px; background-color: green; color: white; border: none; cursor: pointer;">Buscar</button>
+            {% if request.args.get('buscar') %}
+            <a href="{{ url_for('notas') }}" style="margin-left: 10px; text-decoration: none; color: #666;">Limpiar</a>
+            {% endif %}
+        </form>
+    </div>
+
+    {% if notas %}
+    <table>
+        <thead>
+        <tr>
+            <th>Título</th>
+            <th>Contenido</th>
+            <th>Fecha</th>
+            <th>Acciones</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for nota in notas %}
+        <tr>
+            <td>{{ nota['titulo'] }}</td>
+            <td>{{ nota['contenido'] }}</td>
+            <td>{{ nota['fecha_creacion'].split(' ')[0] }}</td>
+            <td>
+                <form action="{{ url_for('eliminar_nota', id=nota['id']) }}" method="POST" class="delete-form"
+                      onsubmit="return confirm('¿Estás seguro de eliminar esta nota?');">
+                    <button type="submit" class="note-btn delete-btn">Eliminar</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="no-notes">
+        <p>No tienes notas guardadas.</p>
+    </div>
+    {% endif %}
+</div>
 </body>
 </html>
