@@ -1,61 +1,130 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, redirect, url_for, session, flash
 import sqlite3
 
 app = Flask(__name__)
+app.secret_key = 'secret_key_muy_segura'
 
-def filtrar_usuarios_por_nombre(nombre=None, modo='seguro'):
+def coneccion_a_base_de_datos():
     conn = sqlite3.connect('usuarios.db')
-    cursor = conn.cursor()
+    conn.row_factory = sqlite3.Row
+    return conn
 
-    if nombre and nombre.strip():
-        if modo == 'seguro':
-            # Usar parámetros para evitar inyección SQL
-            cursor.execute("SELECT id, nombre, email FROM usuarios WHERE nombre LIKE ?", ('%' + nombre + '%',))
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        usuario = request.form.get('usuario')
+        password = request.form.get('password')
+
+        conn = coneccion_a_base_de_datos()
+        user = conn.execute('SELECT * FROM usuarios WHERE usuario = ? AND password = ?', (usuario, password)).fetchone()
+        conn.close()
+
+        if user:
+            session['user_id'] = user['id']
+            session['user_name'] = user['nombre']
+            return redirect(url_for('notas'))
         else:
-            # Concatenamos el string, muy inseguro
-            cursor.execute("SELECT nombre, email FROM usuarios WHERE email = '" + nombre + "'")
-    else:
-        # Si no hay nombre, devolver todos los usuarios
-        cursor.execute("SELECT id, nombre, email FROM usuarios")
+            flash('Email o contraseña incorrectos', 'error')
 
-    resultados = cursor.fetchall()
+    return render_template('login.html')
+
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    flash('Has cerrado sesión', 'info')
+    return redirect(url_for('login'))
+
+# Notes routes
+@app.route('/')
+def index():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    return redirect(url_for('notas'))
+
+@app.route('/notas')
+def notas():
+
+    conn = coneccion_a_base_de_datos()
+    notas = conn.execute('SELECT * FROM notas WHERE usuario_id = ? ORDER BY fecha_creacion DESC',
+                        (session['user_id'],)).fetchall()
     conn.close()
-    return resultados
 
+    return render_template('notas.html', notas=notas)
 
-@app.route("/", methods=['GET', 'POST'])
-def buscar_usuario():
-    nombre_busqueda = request.form.get('nombre', '') if request.method == 'POST' else ''
-    modo = request.form.get('modo')
-    usuarios = filtrar_usuarios_por_nombre(nombre_busqueda, modo)
-    return render_template('usuarios.html', usuarios=usuarios, filtro=nombre_busqueda)
+@app.route('/notas/nueva', methods=['GET', 'POST'])
+def nueva_nota():
 
-if __name__ == '__main__':
-    # Crear una tabla de ejemplo y agregar datos de prueba
-    conn = sqlite3.connect('usuarios.db')
-    cursor = conn.cursor()
+    if request.method == 'POST':
+        titulo = request.form.get('titulo')
+        contenido = request.form.get('contenido')
 
-    # Crear la tabla si no existe
-    cursor.execute("CREATE TABLE IF NOT EXISTS usuarios (id INTEGER PRIMARY KEY, nombre TEXT, email TEXT)")
+        conn = coneccion_a_base_de_datos()
+        conn.executescript(f'INSERT INTO notas (titulo, contenido, usuario_id) VALUES ("{titulo}", "{contenido}", "{session['user_id']}")')
+        conn.commit()
+        conn.close()
 
-    # Verificar si ya hay datos en la tabla
-    cursor.execute("SELECT COUNT(*) FROM usuarios")
-    count = cursor.fetchone()[0]
+        flash('Nota creada correctamente', 'success')
+        return redirect(url_for('notas'))
 
-    # Agregar datos de ejemplo solo si la tabla está vacía
-    if count == 0:
-        usuarios_ejemplo = [
-            ('Juan Pérez', 'juan@ejemplo.com'),
-            ('María García', 'maria@ejemplo.com'),
-            ('Carlos López', 'carlos@ejemplo.com'),
-            ('Ana Martínez', 'ana@ejemplo.com'),
-            ('Pedro Rodríguez', 'pedro@ejemplo.com'),
-            ('Laura Sánchez', 'laura@ejemplo.com'),
-            ('Miguel González', 'miguel@ejemplo.com'),
-            ('Sofía Fernández', 'sofia@ejemplo.com')
-        ]
-        cursor.executemany("INSERT INTO usuarios (nombre, email) VALUES (?, ?)", usuarios_ejemplo)
+    return render_template('crear_notas.html')
+
+@app.route('/notas/<int:id>/eliminar', methods=['POST'])
+def eliminar_nota(id):
+
+    conn = coneccion_a_base_de_datos()
+    conn.execute('DELETE FROM notas WHERE id = ? AND usuario_id = ?', (id, session['user_id']))
     conn.commit()
     conn.close()
 
+    flash('Nota eliminada correctamente', 'success')
+    return redirect(url_for('notas'))
+
+def init_db():
+    conn = sqlite3.connect('usuarios.db')
+    cursor = conn.cursor()
+
+    cursor.execute("DROP TABLE IF EXISTS notas")
+    cursor.execute("DROP TABLE IF EXISTS usuarios")
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS usuarios (
+        id INTEGER PRIMARY KEY, 
+        nombre TEXT NOT NULL, 
+        usuario TEXT UNIQUE NOT NULL, 
+        password TEXT NOT NULL
+    )
+    """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS notas (
+        id INTEGER PRIMARY KEY,
+        titulo TEXT NOT NULL,
+        contenido TEXT NOT NULL,
+        fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        usuario_id INTEGER,
+        FOREIGN KEY (usuario_id) REFERENCES usuarios (id)
+    )
+    """)
+
+    usuarios_ejemplo = [
+        ('Juan Pérez', 'juan', '123'),
+        ('María García', 'maria', '123'),
+        ('Carlos López', 'carlos', '123')
+    ]
+    cursor.executemany("INSERT INTO usuarios (nombre, usuario, password) VALUES (?, ?, ?)", usuarios_ejemplo)
+
+    notas_ejemplo = [
+        ('Primera nota', 'Contenido de mi primera nota', 1),
+        ('Lista de compras', 'Leche, pan, huevos', 1),
+        ('Recordatorio', 'Llamar al médico mañana', 2),
+        ('Ideas para proyecto', 'Implementar autenticación de usuarios', 3)
+    ]
+    cursor.executemany("INSERT INTO notas (titulo, contenido, usuario_id) VALUES (?, ?, ?)", notas_ejemplo)
+
+    conn.commit()
+    conn.close()
+
+if __name__ == '__main__':
+    init_db()
     app.run(debug=True)
