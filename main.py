@@ -42,48 +42,76 @@ def index():
 @app.route('/notas')
 def notas():
     busqueda = request.args.get('buscar', '')
+    proteccion_sql = request.args.get('proteccion_sql', 'si')  # Por defecto, proteger contra inyección SQL
 
     conn = coneccion_a_base_de_datos()
 
-
     if busqueda:
         # Si hay un término de búsqueda, filtramos por contenido
-        notas = conn.execute(
-            f"SELECT id, titulo, contenido, fecha_creacion FROM notas WHERE usuario_id = {session['user_id']} AND contenido LIKE '%{busqueda}%' ORDER BY fecha_creacion DESC"
-        ).fetchall()
+        if proteccion_sql == 'si':
+            # Usar consulta parametrizada (segura)
+            notas = conn.execute(
+                "SELECT id, titulo, contenido, fecha_creacion FROM notas WHERE usuario_id = ? AND contenido LIKE ? ORDER BY fecha_creacion DESC", 
+                (session['user_id'], f"%{busqueda}%")
+            ).fetchall()
+        else:
+            # Permitir inyección SQL (inseguro)
+            notas = conn.execute(
+                f"SELECT id, titulo, contenido, fecha_creacion FROM notas WHERE usuario_id = {session['user_id']} AND contenido LIKE '%{busqueda}%' ORDER BY fecha_creacion DESC"
+            ).fetchall()
     else:
         # Si no hay término de búsqueda, mostramos todas las notas
-        notas = conn.execute(f"SELECT * FROM notas WHERE usuario_id = {session['user_id']} ORDER BY fecha_creacion DESC").fetchall()
+        notas = conn.execute(
+            "SELECT * FROM notas WHERE usuario_id = ? ORDER BY fecha_creacion DESC",
+            (session['user_id'],)
+        ).fetchall()
 
     conn.close()
 
-    return render_template('notas.html', notas=notas)
+    return render_template('notas.html', notas=notas, proteccion_sql=proteccion_sql)
 
 @app.route('/notas/nueva', methods=['GET', 'POST'])
 def nueva_nota():
+    # Obtener el valor de proteccion_sql de la sesión o de la URL
+    proteccion_sql = request.args.get('proteccion_sql', 'si')
 
     if request.method == 'POST':
         titulo = request.form.get('titulo')
         contenido = request.form.get('contenido')
+        proteccion_sql = request.form.get('proteccion_sql', 'si')  # Por defecto, proteger contra inyección SQL
 
         conn = coneccion_a_base_de_datos()
-        conn.executescript(f"INSERT INTO notas (usuario_id, titulo, contenido) VALUES ('{session['user_id']}', '{titulo}', '{contenido}')")
+
+        if proteccion_sql == 'si':
+            # Usar consulta parametrizada (segura)
+            conn.execute(
+                "INSERT INTO notas (usuario_id, titulo, contenido) VALUES (?, ?, ?)",
+                (session['user_id'], titulo, contenido)
+            )
+        else:
+            # Permitir inyección SQL (inseguro)
+            conn.executescript(
+                f"INSERT INTO notas (usuario_id, titulo, contenido) VALUES ('{session['user_id']}', '{titulo}', '{contenido}')"
+            )
+
         conn.commit()
         conn.close()
 
-        return redirect(url_for('notas'))
+        return redirect(url_for('notas', proteccion_sql=proteccion_sql))
 
-    return render_template('crear_notas.html')
+    return render_template('crear_notas.html', proteccion_sql=proteccion_sql)
 
 @app.route('/notas/<int:id>/eliminar', methods=['POST'])
 def eliminar_nota(id):
+    # Obtener el valor de proteccion_sql del formulario o de la URL
+    proteccion_sql = request.form.get('proteccion_sql', request.args.get('proteccion_sql', 'si'))
 
     conn = coneccion_a_base_de_datos()
     conn.execute('DELETE FROM notas WHERE id = ? AND usuario_id = ?', (id, session['user_id']))
     conn.commit()
     conn.close()
 
-    return redirect(url_for('notas'))
+    return redirect(url_for('notas', proteccion_sql=proteccion_sql))
 
 def init_db():
     conn = sqlite3.connect('usuarios.db')

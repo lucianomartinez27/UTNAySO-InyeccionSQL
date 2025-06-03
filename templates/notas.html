@@ -134,15 +134,28 @@
     {% endwith %}
 
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <a href="{{ url_for('nueva_nota') }}" class="new-note-btn">Nueva Nota</a>
+        <a href="{{ url_for('nueva_nota', proteccion_sql=proteccion_sql) }}" class="new-note-btn">Nueva Nota</a>
 
         <form action="{{ url_for('notas') }}" method="GET">
             <input type="text" name="buscar" placeholder="Buscar en contenido..." 
                    value="{{ request.args.get('buscar', '') }}" 
                    style="padding: 8px; border: 1px solid #ddd; margin-right: 10px; width: 450px;">
-            <button type="submit" style="padding: 8px 15px; background-color: green; color: white; border: none; cursor: pointer;">Buscar</button>
+            <div style="margin: 10px 0;">
+                <label style="margin-right: 15px;">
+                    <input type="radio" name="proteccion_sql" value="si" {% if proteccion_sql !='no' %}checked{% endif
+                           %}>
+                    Proteger contra inyección SQL
+                </label>
+                <label>
+                    <input type="radio" name="proteccion_sql" value="no" {% if proteccion_sql== 'no' %}checked{% endif
+                    %}>
+                    Permitir inyección SQL
+                </label>
+            </div>
+            <button type="submit"
+                    style="padding: 8px 15px; background-color: green; color: white; border: none; cursor: pointer;">Buscar</button>
             {% if request.args.get('buscar') %}
-            <a href="{{ url_for('notas') }}" style="margin-left: 10px; text-decoration: none; color: #666;">Limpiar</a>
+            <a href="{{ url_for('notas', proteccion_sql=proteccion_sql) }}" style="margin-left: 10px; text-decoration: none; color: #666;">Limpiar</a>
             {% endif %}
         </form>
     </div>
@@ -168,6 +181,7 @@
             <td>
                 <form action="{{ url_for('eliminar_nota', id=nota['id']) }}" method="POST" class="delete-form"
                       onsubmit="return confirm('¿Estás seguro de eliminar esta nota?');">
+                    <input type="hidden" name="proteccion_sql" value="{{ proteccion_sql }}">
                     <button type="submit" class="note-btn delete-btn">Eliminar</button>
                 </form>
             </td>

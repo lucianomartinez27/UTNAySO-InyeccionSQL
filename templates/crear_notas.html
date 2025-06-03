@@ -93,7 +93,7 @@
     <div class="container">
         <header>
             <h1>Nueva Nota</h1>
-            <a href="{{ url_for('notas') }}" class="back-btn">Volver</a>
+            <a href="{{ url_for('notas', proteccion_sql=proteccion_sql) }}" class="back-btn">Volver</a>
         </header>
 
         <div class="note-form">
@@ -106,8 +106,20 @@
                     <label for="contenido">Contenido:</label>
                     <textarea id="contenido" name="contenido" required>{{ nota['contenido'] if nota else '' }}</textarea>
                 </div>
+                 <div style="margin: 10px 0;">
+                <label style="margin-right: 15px;">
+                    <input type="radio" name="proteccion_sql" value="si" {% if proteccion_sql !='no' %}checked{% endif
+                           %}>
+                    Proteger contra inyección SQL
+                </label>
+                <label>
+                    <input type="radio" name="proteccion_sql" value="no" {% if proteccion_sql== 'no' %}checked{% endif
+                    %}>
+                    Permitir inyección SQL
+                </label>
+            </div>
                 <div class="form-actions">
-                    <a href="{{ url_for('notas') }}" class="form-btn cancel-btn">Cancelar</a>
+                    <a href="{{ url_for('notas', proteccion_sql=proteccion_sql) }}" class="form-btn cancel-btn">Cancelar</a>
                     <button type="submit" class="form-btn save-btn">Guardar</button>
                 </div>
             </form>
